@@ -60,9 +60,13 @@ public class FetchSDKsService(
             return;
         }
 
-        using var httpClient = httpClientFactory.CreateBaseHttpClient();
-
         var fileName = Path.GetFileName(fileUrl);
+
+        if (!fileName.EndsWith(value: ".exe", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
         channelVersion ??= "latest";
         var channelFolderPath = Path.Join(appPathService.OutputFolderPath, channelVersion);
 
@@ -73,6 +77,7 @@ public class FetchSDKsService(
 
         var outputFilePath = Path.Join(channelFolderPath, fileName);
 
+        using var httpClient = httpClientFactory.CreateBaseHttpClient();
         var success = await httpClient.DownloadFileAsync(fileUrl, outputFilePath);
 
         if (success && logger.IsEnabled(LogLevel.Debug))
