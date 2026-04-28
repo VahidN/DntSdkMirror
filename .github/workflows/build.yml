@@ -40,9 +40,17 @@ jobs:
           fi
         continue-on-error: true
       
-      - name: Commit and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git add sdks/
-          git diff --staged --quiet || git commit -m "Update SDKs at $(date -u +'%Y-%m-%d %H:%M:%S')"
-          git push
+      - name: Push changes to repo          
+        run: |      
+          git config http.sslVerify false
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git remote add publisher "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git show-ref
+          git branch --verbose
+          git lfs install
+          git checkout main
+          git add -A
+          git commit -m "Automated publish at $(date -u +'%Y-%m-%d %H:%M:%S')" || echo "there is nothing to commit, proceed"
+          git pull --rebase publisher main
+          git push publisher main
