@@ -32,10 +32,17 @@ jobs:
           echo "Searching for any .exe files..."
           find . -name "*.exe"
     
-      - name: Push changes to repo          
-        run: |      
+      - name: Copy sdks to root
+        run: |
+          find src -type d -name "sdks" -exec cp -r {} ./sdks \;
+          if [ -d "src/DntSdkMirror/bin/Debug/net10.0/home/runner/work/DntSdkMirror/DntSdkMirror/sdks" ]; then
+            cp -r src/DntSdkMirror/bin/Debug/net10.0/home/runner/work/DntSdkMirror/DntSdkMirror/sdks ./sdks
+          fi
+        continue-on-error: true
+      
+      - name: Commit and push
+        run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ./sdks/
-          git diff --staged --quiet || git commit -m "Automated update at $(date -u +'%Y-%m-%d %H:%M:%S')"
+          git add sdks/
+          git diff --staged --quiet || git commit -m "Update SDKs at $(date -u +'%Y-%m-%d %H:%M:%S')"
           git push
