@@ -23,9 +23,15 @@ jobs:
       - name: Run Project
         run: dotnet run --project ./src/DntSdkMirror/DntSdkMirror.csproj
 
-      - name: List files
-        run: ls -la
-  
+      - name: Find sdks folder
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
+          echo "Searching for sdks folder..."
+          find . -type d -name "sdks"
+          echo "Searching for any .exe files..."
+          find . -name "*.exe"
+    
       - name: Push changes to repo          
         run: |      
           git config user.name "github-actions[bot]"
