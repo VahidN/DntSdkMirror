@@ -1,0 +1,59 @@
+{
+  "channel-version": "11.0",
+  "latest-release": "11.0.0-preview.3",
+  "latest-release-date": "2026-04-14",
+  "latest-runtime": "11.0.0-preview.3.26207.106",
+  "latest-sdk": "11.0.100-preview.3.26207.106",
+  "support-phase": "preview",
+  "release-type": "sts",
+  "lifecycle-policy": "https://aka.ms/dotnetcoresupport",
+  "releases": [
+    {
+      "release-date": "2026-04-14",
+      "release-version": "11.0.0-preview.3",
+      "security": false,
+      "cve-list": [],
+      "release-notes": "https://github.com/dotnet/core/blob/main/release-notes/11.0/preview/preview3/11.0.0-preview.3.md",
+      "runtime": {
+        "version": "11.0.0-preview.3.26207.106",
+        "version-display": "11.0.0-preview.3",
+        "files": [
+          {
+            "name": "dotnet-runtime-linux-x64.tar.gz",
+            "rid": "linux-x64",
+            "url": "https://builds.dotnet.microsoft.com/dotnet/Runtime/11.0.0-preview.3.26207.106/dotnet-runtime-11.0.0-preview.3.26207.106-linux-x64.tar.gz",
+            "hash": "424dc6da11b5b6ad29848feaa1c015da3448a80af4ab953832a8f05227caf8b16d6efc4f003b675e47eb237ba05f1544065506c9ee37dd99e701f5dfd5e09f3a"
+          },
+          {
+            "name": "dotnet-runtime-win-x64.exe",
+            "rid": "win-x64",
+            "url": "https://builds.dotnet.microsoft.com/dotnet/Runtime/11.0.0-preview.3.26207.106/dotnet-runtime-11.0.0-preview.3.26207.106-win-x64.exe",
+            "hash": "ab74ea22ba55b50b80364f674929a8c45325a3d478c152dcb4e24bd51ab254d6b4e62f4adb311fd0bcb2d8d43759962757f3b9661994af1935dba47c77265592"
+          }
+        ]
+      },
+      "sdk": {
+        "version": "11.0.100-preview.3.26207.106",
+        "version-display": "11.0.100-preview.3",
+        "runtime-version": "11.0.0-preview.3.26207.106",
+        "csharp-version": "14.0",
+        "files": [
+          {
+            "name": "dotnet-sdk-linux-x64.tar.gz",
+            "rid": "linux-x64",
+            "url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/11.0.100-preview.3.26207.106/dotnet-sdk-11.0.100-preview.3.26207.106-linux-x64.tar.gz",
+            "hash": "03a9e6880ecd07301a2ae95e4ebea00df758a80843683ca3a35c4615df32493139fca8c3b820a2285eb1558ec7192dfd0081656089dd0d226138bdc6b98e521a"
+          }
+        ]
+      },
+      "aspnetcore-runtime": {
+        "version": "11.0.0-preview.3.26207.106",
+        "version-display": "11.0.0-preview.3"
+      },
+      "windowsdesktop": {
+        "version": "11.0.0-preview.3.26207.106",
+        "version-display": "11.0.0-preview.3"
+      }
+    }
+  ]
+}
