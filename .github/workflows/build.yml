@@ -1,1 +1,39 @@
+name: .NET Core Build
 
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v5
+        with:
+            dotnet-version: 10.0.x
+
+      - name: Run Project
+        run: dotnet run --project ./src/DntSdkMirror/DntSdkMirror.csproj
+          
+      - name: Push changes to repo          
+        run: |      
+          git config http.sslVerify false
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git remote add publisher "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git show-ref
+          git branch --verbose
+          git lfs install
+          git checkout main
+          git add -A
+          git commit -m "Automated publish at $(date -u +'%Y-%m-%d %H:%M:%S')" || echo "there is nothing to commit, proceed"
+          git pull --rebase publisher main
+          git push publisher main
