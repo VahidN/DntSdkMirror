@@ -44,9 +44,53 @@ public class FetchSDKsService(
                 continue;
             }
 
-            foreach (var file in lastRelease.Sdk.Files.Where(file => !string.IsNullOrWhiteSpace(file.Url)))
+            foreach (var file in lastRelease.Sdk.Files.Where(fileItem => !string.IsNullOrWhiteSpace(fileItem.Url)))
             {
-                var success = await DownloadFileAsync(file.Url, channelData?.ChannelVersion);
+                var fileUrl = file.Url;
+
+                if (string.IsNullOrWhiteSpace(fileUrl))
+                {
+                    continue;
+                }
+
+                var fileName = Path.GetFileName(fileUrl);
+
+                if (IsNotWindowsSdk(fileName))
+                {
+                    if (logger.IsEnabled(LogLevel.Debug))
+                    {
+                        logger.LogDebug(message: "Skipped downloading non-Windows file: `{Url}`", fileUrl);
+                    }
+
+                    continue;
+                }
+
+                var (outputFilePath, outputDirectory) = GetOutputFilePath(fileName, channelData?.ChannelVersion);
+
+                var (zipParts, _) = ZipSplitter.GetExistingZipFiles(fileName, outputDirectory);
+
+                if (zipParts.Count > 0)
+                {
+                    if (logger.IsEnabled(LogLevel.Debug))
+                    {
+                        logger.LogDebug(message: "`{Url}` is already downloaded.", fileUrl);
+                    }
+
+                    continue;
+                }
+
+                var success = await DownloadFileAsync(fileUrl, outputFilePath);
+
+                if (success)
+                {
+                    var zipFiles = ZipSplitter.SplitZip(outputFilePath, partSizeMB: 90, outputDirectory,
+                        overwriteExistingFiles: false, logger);
+
+                    if (zipFiles?.Count > 0)
+                    {
+                        File.Delete(outputFilePath);
+                    }
+                }
 
                 if (success && appConfig.Value.DownloadOneFileEachTime)
                 {
@@ -58,35 +102,8 @@ public class FetchSDKsService(
         return true;
     }
 
-    private async Task<bool> DownloadFileAsync(string? fileUrl, string? channelVersion)
+    private async Task<bool> DownloadFileAsync(string fileUrl, string outputFilePath)
     {
-        if (string.IsNullOrWhiteSpace(fileUrl))
-        {
-            return false;
-        }
-
-        var fileName = Path.GetFileName(fileUrl);
-
-        if (IsNotWindowsSdk(fileName))
-        {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                logger.LogDebug(message: "Skipped downloading non-Windows file: `{Url}`", fileUrl);
-            }
-
-            return false;
-        }
-
-        channelVersion ??= "latest";
-        var channelFolderPath = Path.Join(appPathService.OutputFolderPath, channelVersion);
-
-        if (!Directory.Exists(channelFolderPath))
-        {
-            Directory.CreateDirectory(channelFolderPath);
-        }
-
-        var outputFilePath = Path.Join(channelFolderPath, fileName);
-
         using var httpClient = httpClientFactory.CreateBaseHttpClient();
         var success = await httpClient.DownloadFileAsync(fileUrl, outputFilePath, logger);
 
@@ -99,14 +116,28 @@ public class FetchSDKsService(
         return success;
     }
 
+    private (string OutputFilePath, string ChannelFolderPath) GetOutputFilePath(string fileName, string? channelVersion)
+    {
+        channelVersion ??= "latest";
+        var channelFolderPath = Path.Join(appPathService.OutputFolderPath, channelVersion);
+
+        if (!Directory.Exists(channelFolderPath))
+        {
+            Directory.CreateDirectory(channelFolderPath);
+        }
+
+        var outputFilePath = Path.Join(channelFolderPath, fileName);
+
+        return (outputFilePath, channelFolderPath);
+    }
+
     private static bool IsNotWindowsSdk(string fileName)
         => !fileName.EndsWith(value: ".exe", StringComparison.OrdinalIgnoreCase) ||
-           fileName.Contains(value: "-arm", StringComparison.OrdinalIgnoreCase);
+           fileName.Contains(value: "-arm", StringComparison.OrdinalIgnoreCase) ||
+           fileName.Contains(value: "x86", StringComparison.OrdinalIgnoreCase);
 
     private static bool HasNotActiveSupport(ReleaseInfo releaseIndex)
-        => releaseIndex.SupportPhase is null ||
-           (!releaseIndex.SupportPhase.Equals(value: "active", StringComparison.OrdinalIgnoreCase) &&
-            !releaseIndex.SupportPhase.Equals(value: "preview", StringComparison.OrdinalIgnoreCase));
+        => releaseIndex.SupportPhase?.Equals(value: "active", StringComparison.OrdinalIgnoreCase) != true;
 
     private async Task<DotNetChannelReleases?> GetChannelReleasesAsync(string? url)
     {
