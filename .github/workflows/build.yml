@@ -47,7 +47,7 @@ jobs:
 
             # (اختیاری) نمایش محتوا در لاگ
             cat latest-download-link.txt
-          env:
+        env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit and push the link file
