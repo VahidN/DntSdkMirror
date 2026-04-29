@@ -93,7 +93,8 @@ public static class ZipSplitter
         {
             foreach (var createdFile in createdFiles)
             {
-                logger.LogDebug(message: "Created zip file: {File}", createdFile);
+                logger.LogDebug(message: "Created zip file: {File}, Size: {Size}", createdFile,
+                    new FileInfo(createdFile).Length.ToFormattedFileSize());
             }
         }
 
