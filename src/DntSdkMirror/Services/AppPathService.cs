@@ -35,20 +35,18 @@ public class AppPathService(
 
     private string GetRootPath()
     {
-        var projectFolder = hostEnvironment.ContentRootPath.Split(
-            [$"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"],
-            StringSplitOptions.RemoveEmptyEntries)[0];
+        var root = Path.GetFullPath(hostEnvironment.ContentRootPath);
 
-        var folderNames = projectFolder.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[..^2];
-
-        var rootPath = string.Join(Path.DirectorySeparatorChar, folderNames);
+        var projectFolder = Path.GetFullPath(Path.Combine(
+            root.Split([$"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"],
+                StringSplitOptions.RemoveEmptyEntries)[0], path2: "..", path3: ".."));
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
-            logger.LogDebug(message: "ContentRootPath: {ContentRootPath}", hostEnvironment.ContentRootPath);
-            logger.LogDebug(message: "Using root: {Root}", rootPath);
+            logger.LogDebug(message: "Using root: {Root}", root);
+            logger.LogDebug(message: "Using projectFolder: {ProjectFolder}", projectFolder);
         }
 
-        return rootPath;
+        return projectFolder;
     }
 }
