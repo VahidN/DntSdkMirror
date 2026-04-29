@@ -2,7 +2,7 @@ name: .NET Core Build
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
     
@@ -23,17 +23,37 @@ jobs:
       - name: Run Project
         run: dotnet run --project ./src/DntSdkMirror/DntSdkMirror.csproj
           
-      - name: Push changes to repo          
-        run: |      
-          git config http.sslVerify false
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git remote add publisher "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-          git show-ref
-          git branch --verbose
-          git lfs install
-          git checkout main
-          git add -A
-          git commit -m "Automated publish at $(date -u +'%Y-%m-%d %H:%M:%S')" || echo "there is nothing to commit, proceed"
-          git pull --rebase publisher main
-          git push publisher main
+      - uses: actions/upload-artifact@v4
+        with:
+             name: all-downloaded-files
+             path: sdks/   # کل محتویات این پوشه (با زیرپوشه‌ها) در یک artifact قرار می‌گیرد
+             retention-days: 7
+
+      - name: Get all artifact links and save to file
+        run: |
+            sleep 5  # کمی صبر تا Artifactها ثبت شوند
+            # دریافت لیست تمام Artifactهای این Run
+            ARTIFACTS_JSON=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
+            # استخراج name و id هر Artifact
+            echo "$ARTIFACTS_JSON" | jq -r '.artifacts[] | "\(.name)|\(.id)"' > artifacts_list.txt
+
+            # ایجاد یا بازنویسی فایل latest-download-link.txt
+            > latest-download-link.txt
+
+            while IFS='|' read -r name id; do
+              LINK="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/$id"
+              echo "$name: $LINK" >> latest-download-link.txt
+            done < artifacts_list.txt
+
+            # (اختیاری) نمایش محتوا در لاگ
+            cat latest-download-link.txt
+          env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and push the link file
+        run: |
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add latest-download-link.txt
+            git diff --staged --quiet || git commit -m "Update latest download links ($(date -u +'%Y-%m-%d'))"
+            git push
