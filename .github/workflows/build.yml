@@ -26,14 +26,16 @@ jobs:
       - name: List all files in sdks folder
         id: list_files
         run: |
-          mapfile -t files < <(find sdks -type f -name "*.exe" 2>/dev/null || echo "")
-          if [ ${#files[@]} -eq 0 ]; then
+          # پیدا کردن مسیر تمام فایل‌های exe
+          files=$(find sdks -type f -name "*.exe" 2>/dev/null || echo "")
+          if [ -z "$files" ]; then
             echo "matrix=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
-          json_array=$(printf '%s\n' "${files[@]}" | jq -R . | jq -s .)
+          # تبدیل به آرایه JSON فشرده (بدون فاصله و خط جدید اضافی)
+          json_array=$(echo "$files" | jq -R -s -c 'split("\n") | map(select(length>0))')
           echo "matrix=$json_array" >> $GITHUB_OUTPUT
-
+    
   upload:
     needs: download
     runs-on: ubuntu-latest
