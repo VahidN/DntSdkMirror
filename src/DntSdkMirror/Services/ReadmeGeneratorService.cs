@@ -72,6 +72,6 @@ public class ReadmeGeneratorService(
                 StringComparison.OrdinalIgnoreCase)}".Replace(oldChar: '\\', newChar: '/');
 
         return
-            $"[{fileInfo.Name}](https://raw.githubusercontent.com/{config.Owner}/{config.Repository}/{config.Branch}/{relativeFilePath})";
+            $"[{fileInfo.Name}](https://github.com/{config.Owner}/{config.Repository}/raw/refs/heads/{config.Branch}/{relativeFilePath})";
     }
 }
