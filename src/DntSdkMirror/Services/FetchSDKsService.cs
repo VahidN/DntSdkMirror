@@ -46,25 +46,35 @@ public class FetchSDKsService(
 
             foreach (var file in lastRelease.Sdk.Files.Where(file => !string.IsNullOrWhiteSpace(file.Url)))
             {
-                await DownloadFileAsync(file.Url, channelData?.ChannelVersion);
+                var success = await DownloadFileAsync(file.Url, channelData?.ChannelVersion);
+
+                if (success && appConfig.Value.DownloadOneFileEachTime)
+                {
+                    return true;
+                }
             }
         }
 
         return true;
     }
 
-    private async Task DownloadFileAsync(string? fileUrl, string? channelVersion)
+    private async Task<bool> DownloadFileAsync(string? fileUrl, string? channelVersion)
     {
         if (string.IsNullOrWhiteSpace(fileUrl))
         {
-            return;
+            return false;
         }
 
         var fileName = Path.GetFileName(fileUrl);
 
-        if (!fileName.EndsWith(value: ".exe", StringComparison.OrdinalIgnoreCase))
+        if (IsNotWindowsSdk(fileName))
         {
-            return;
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(message: "Skipped downloading non-Windows file: `{Url}`", fileUrl);
+            }
+
+            return false;
         }
 
         channelVersion ??= "latest";
@@ -78,13 +88,20 @@ public class FetchSDKsService(
         var outputFilePath = Path.Join(channelFolderPath, fileName);
 
         using var httpClient = httpClientFactory.CreateBaseHttpClient();
-        var success = await httpClient.DownloadFileAsync(fileUrl, outputFilePath);
+        var success = await httpClient.DownloadFileAsync(fileUrl, outputFilePath, logger);
 
         if (success && logger.IsEnabled(LogLevel.Debug))
         {
-            logger.LogDebug(message: "Finished downloading `{OutputFilePath}`.", outputFilePath);
+            logger.LogDebug(message: "Finished downloading `{OutputFilePath}`. Size: {Size}", outputFilePath,
+                new FileInfo(outputFilePath).Length.ToFormattedFileSize());
         }
+
+        return success;
     }
+
+    private static bool IsNotWindowsSdk(string fileName)
+        => !fileName.EndsWith(value: ".exe", StringComparison.OrdinalIgnoreCase) ||
+           fileName.Contains(value: "-arm", StringComparison.OrdinalIgnoreCase);
 
     private static bool HasNotActiveSupport(ReleaseInfo releaseIndex)
         => releaseIndex.SupportPhase is null ||
@@ -103,8 +120,16 @@ public class FetchSDKsService(
 
         if (string.IsNullOrWhiteSpace(releasesJsonUrlJsonString))
         {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(message: "Failed to download `{Url}`.", url);
+            }
+
             return null;
         }
+
+        await File.WriteAllTextAsync(Path.Join(appPathService.OutputFolderPath, Path.GetFileName(url)),
+            releasesJsonUrlJsonString);
 
         var channelData =
             JsonSerializer.Deserialize<DotNetChannelReleases>(releasesJsonUrlJsonString, JsonSerializerOptions);
@@ -121,12 +146,28 @@ public class FetchSDKsService(
     private async Task<DotNetReleaseIndex?> GetReleasesIndexAsync()
     {
         using var httpClient = httpClientFactory.CreateBaseHttpClient();
-        var releasesIndexUrlJsonString = await httpClient.GetStringAsync(appConfig.Value.ReleasesIndexUrl);
+        var indexUrl = appConfig.Value.ReleasesIndexUrl;
+
+        if (string.IsNullOrWhiteSpace(indexUrl))
+        {
+            throw new InvalidOperationException(
+                message: "`ReleasesIndexUrl` of `appsettings.json` IsNullOrWhiteSpace.");
+        }
+
+        var releasesIndexUrlJsonString = await httpClient.GetStringAsync(indexUrl);
 
         if (string.IsNullOrWhiteSpace(releasesIndexUrlJsonString))
         {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(message: "Failed to download `{Url}`.", indexUrl);
+            }
+
             return null;
         }
+
+        await File.WriteAllTextAsync(Path.Join(appPathService.OutputFolderPath, Path.GetFileName(indexUrl)),
+            releasesIndexUrlJsonString);
 
         var index = JsonSerializer.Deserialize<DotNetReleaseIndex>(releasesIndexUrlJsonString, JsonSerializerOptions);
 
