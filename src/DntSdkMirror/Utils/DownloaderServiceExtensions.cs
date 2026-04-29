@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace DntSdkMirror.Utils;
 
 public static class DownloaderServiceExtensions
@@ -9,9 +11,16 @@ public static class DownloaderServiceExtensions
     public static async Task<bool> DownloadFileAsync(this HttpClient client,
         [StringSyntax(syntax: "Uri")] string url,
         string outputFilePath,
+        ILogger logger,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug(message: "Strat processing `{Url}`.", url);
+        }
 
         var bytesTransferred = 0L;
         var fileMode = FileMode.CreateNew;
@@ -19,6 +28,11 @@ public static class DownloaderServiceExtensions
 
         if (fileInfo.Exists)
         {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(message: "`{File}` already exists.", outputFilePath);
+            }
+
             bytesTransferred = fileInfo.Length;
             fileMode = FileMode.Append;
         }
@@ -32,6 +46,11 @@ public static class DownloaderServiceExtensions
 
         if (bytesTransferred > 0 && RemoteFileSize == bytesTransferred)
         {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(message: "Skipped downloading `{File}`.", outputFilePath);
+            }
+
             return false;
         }
 
@@ -43,9 +62,17 @@ public static class DownloaderServiceExtensions
 
         if (!supportsRange && fileStream.Length > 0)
         {
-            // Resume is not supported. Starting over.
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(message: "Resume is not supported. Start downloading `{File}`.", outputFilePath);
+            }
+
             fileStream.SetLength(value: 0);
             await fileStream.FlushAsync(cancellationToken);
+        }
+        else if (logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug(message: "Resume is supported. Continue downloading `{File}`.", outputFilePath);
         }
 
         await inputStream.ReadInputStreamAsync(fileStream, cancellationToken);
