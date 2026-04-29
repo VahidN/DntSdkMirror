@@ -19,9 +19,10 @@ internal static class TestsAppFactory
 
     private static IHost GetHost()
         => Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+            .UseContentRoot(Path.GetFullPath(AppContext.BaseDirectory))
             .ConfigureServices((context, services) =>
             {
-                var httpClientBuilder = services.AddServices(context.Configuration);
+                var httpClientBuilder = services.AddAppServices(context.Configuration);
                 services.AddSingleton<FakeHttpMessageHandler>();
                 httpClientBuilder.AddHttpMessageHandler<FakeHttpMessageHandler>();
             })
