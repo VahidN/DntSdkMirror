@@ -13,6 +13,8 @@ public class FetchSDKsService(
     IAppPathService appPathService,
     ILogger<FetchSDKsService> logger) : IFetchSDKsService
 {
+    private const int MaxPartSizeMB = 45;
+
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -83,7 +85,7 @@ public class FetchSDKsService(
 
                 if (success)
                 {
-                    var zipFiles = ZipSplitter.SplitZip(outputFilePath, partSizeMB: 90, outputDirectory,
+                    var zipFiles = ZipSplitter.SplitZip(outputFilePath, MaxPartSizeMB, outputDirectory,
                         overwriteExistingFiles: false, logger);
 
                     if (zipFiles?.Count > 0)
