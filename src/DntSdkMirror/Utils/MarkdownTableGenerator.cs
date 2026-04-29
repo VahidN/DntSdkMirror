@@ -35,9 +35,9 @@ public static class MarkdownTableGenerator
         markdownTable.AppendLine(value: "|");
 
         // ردیف‌های داده
-        if (rows is null)
+        if (rows is null || rows.Count == 0)
         {
-            return markdownTable.ToString();
+            return string.Empty;
         }
 
         foreach (var row in rows)
