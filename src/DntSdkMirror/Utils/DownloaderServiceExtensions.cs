@@ -69,11 +69,7 @@ public static class DownloaderServiceExtensions
 
             fileStream.SetLength(value: 0);
             await fileStream.FlushAsync(cancellationToken);
-        }
-        else if (logger.IsEnabled(LogLevel.Debug))
-        {
-            logger.LogDebug(message: "Resume is supported. Continue downloading `{File}`.", outputFilePath);
-        }
+        }        
 
         await inputStream.ReadInputStreamAsync(fileStream, cancellationToken);
 
