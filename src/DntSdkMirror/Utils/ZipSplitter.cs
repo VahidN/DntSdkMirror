@@ -51,7 +51,7 @@ public static class ZipSplitter
 
         List<string> args =
         [
-            "-s", string.Create(CultureInfo.InvariantCulture, $"{partSizeMB}m"), "-q", outputZipPath, filePath
+            "-s", string.Create(CultureInfo.InvariantCulture, $"{partSizeMB}m"), "-j", "-q", outputZipPath, filePath
         ];
 
         var processStartInfo = new ProcessStartInfo
