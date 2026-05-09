@@ -33,14 +33,18 @@ public class ReadmeGeneratorService(
         ICollection<ICollection<string>> rows = [];
         var sdksDirInfo = new DirectoryInfo(appPathService.OutputFolderPath);
 
+        var numericComparer = StringComparer.Create(CultureInfo.InvariantCulture,
+            CompareOptions.OrdinalIgnoreCase | CompareOptions.NumericOrdering);
+
         foreach (var fileInfo in sdksDirInfo.GetFiles(searchPattern: "*.*", SearchOption.AllDirectories)
-                     .Where(f => f.Name.StartsWith($"{Path.GetFileNameWithoutExtension(f.Name)}.z",
+                     .Where(fileInfo => fileInfo.Name.StartsWith($"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.z",
                          StringComparison.OrdinalIgnoreCase))
-                     .OrderBy(f => f.Name, StringComparer.Ordinal))
+                     .Select(fileInfo => new ZipFileItem(fileInfo.Directory?.Name ?? "", GetDownloadLink(fileInfo),
+                         fileInfo.Length.ToFormattedFileSize()))
+                     .OrderByDescending(zipFileItem => zipFileItem.Channel, numericComparer)
+                     .ThenBy(zipFileItem => zipFileItem.FileName, numericComparer))
         {
-            rows.Add([
-                fileInfo.Directory?.Name ?? "", GetDownloadLink(fileInfo), fileInfo.Length.ToFormattedFileSize()
-            ]);
+            rows.Add([fileInfo.Channel, fileInfo.FileName, fileInfo.SizeMB]);
         }
 
         var sdksTableContent = MarkdownTableGenerator.GenerateMarkdownTable(["کانال", "فایل", "حجم"], rows);
