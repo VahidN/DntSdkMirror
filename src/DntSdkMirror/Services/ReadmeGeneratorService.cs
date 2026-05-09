@@ -33,8 +33,7 @@ public class ReadmeGeneratorService(
         ICollection<ICollection<string>> rows = [];
         var sdksDirInfo = new DirectoryInfo(appPathService.OutputFolderPath);
 
-        var numericComparer = StringComparer.Create(CultureInfo.InvariantCulture,
-            CompareOptions.OrdinalIgnoreCase | CompareOptions.NumericOrdering);
+        var numericComparer = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.NumericOrdering);
 
         foreach (var fileInfo in sdksDirInfo.GetFiles(searchPattern: "*.*", SearchOption.AllDirectories)
                      .Where(fileInfo => fileInfo.Name.StartsWith($"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.z",
