@@ -116,4 +116,27 @@ public static class ZipSplitter
                 .OrderBy(f => f, StringComparer.Ordinal)
                 .ToList(), outputZipPath);
     }
+
+    public static bool IsZipInstalled()
+    {
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "zip",
+                Arguments = "--version",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+
+            process?.WaitForExit();
+
+            return process?.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
