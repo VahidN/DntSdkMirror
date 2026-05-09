@@ -23,6 +23,16 @@ public class FetchSDKsService(
 
     public async Task<bool> StartAsync(string[] args)
     {
+        if (!ZipSplitter.IsZipInstalled())
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(message: "`zip` app is not installed.");
+            }
+
+            return false;
+        }
+
         var index = await GetReleasesIndexAsync();
 
         if (index?.ReleasesIndex is null)
@@ -37,72 +47,63 @@ public class FetchSDKsService(
                 continue;
             }
 
-            var channelData = await GetChannelReleasesAsync(releaseIndex.ReleasesJsonUrl);
-
+            var channelData = await GetChannelReleasesAsync(releaseIndex.ReleasesJsonUrl, releaseIndex.ChannelVersion);
             var lastRelease = channelData?.Releases?.OrderByDescending(release => release.ReleaseDate).FirstOrDefault();
 
-            if (lastRelease?.Sdk?.Files is null)
+            var channelVersion = channelData?.ChannelVersion;
+            await DownloadReleaseFilesAsync(lastRelease?.Runtime?.Files, channelVersion);
+            await DownloadReleaseFilesAsync(lastRelease?.Sdk?.Files, channelVersion);
+            await DownloadReleaseFilesAsync(lastRelease?.AspNetCoreRuntime?.Files, channelVersion);
+            await DownloadReleaseFilesAsync(lastRelease?.WindowsDesktop?.Files, channelVersion);
+
+            if (appConfig.Value.DownloadOneFileEachTime)
             {
-                continue;
-            }
-
-            foreach (var file in lastRelease.Sdk.Files.Where(fileItem => !string.IsNullOrWhiteSpace(fileItem.Url)))
-            {
-                var fileUrl = file.Url;
-
-                if (string.IsNullOrWhiteSpace(fileUrl))
-                {
-                    continue;
-                }
-
-                var fileName = Path.GetFileName(fileUrl);
-
-                if (IsNotWindowsSdk(fileName))
-                {
-                    if (logger.IsEnabled(LogLevel.Debug))
-                    {
-                        logger.LogDebug(message: "Skipped downloading non-Windows file: `{Url}`", fileUrl);
-                    }
-
-                    continue;
-                }
-
-                var (outputFilePath, outputDirectory) = GetOutputFilePath(fileName, channelData?.ChannelVersion);
-
-                var (zipParts, _) = ZipSplitter.GetExistingZipFiles(fileName, outputDirectory);
-
-                if (zipParts.Count > 0)
-                {
-                    if (logger.IsEnabled(LogLevel.Debug))
-                    {
-                        logger.LogDebug(message: "`{Url}` is already downloaded.", fileUrl);
-                    }
-
-                    continue;
-                }
-
-                var success = await DownloadFileAsync(fileUrl, outputFilePath);
-
-                if (success)
-                {
-                    var zipFiles = ZipSplitter.SplitZip(outputFilePath, MaxPartSizeMB, outputDirectory,
-                        overwriteExistingFiles: false, logger);
-
-                    if (zipFiles?.Count > 0)
-                    {
-                        File.Delete(outputFilePath);
-                    }
-                }
-
-                if (success && appConfig.Value.DownloadOneFileEachTime)
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
         return true;
     }
+
+    private async Task DownloadReleaseFilesAsync(List<FileItem>? files, string? channelVersion)
+    {
+        if (files is null)
+        {
+            return;
+        }
+
+        foreach (var fileUrl in files.Select(fileItem => fileItem.Url)
+                     .Where(fileUrl => !string.IsNullOrWhiteSpace(fileUrl)))
+        {
+            var fileName = Path.GetFileName(fileUrl)!;
+
+            if (ShouldIgnoreReleaseFile(fileName))
+            {
+                continue;
+            }
+
+            var (outputFilePath, outputDirectory) = GetOutputFilePath(fileName, channelVersion);
+
+            if (IsAlreadyDownloaded(fileName, outputDirectory))
+            {
+                continue;
+            }
+
+            if (await DownloadFileAsync(fileUrl!, outputFilePath))
+            {
+                var zipFiles = ZipSplitter.SplitZip(outputFilePath, MaxPartSizeMB, outputDirectory,
+                    overwriteExistingFiles: false, logger);
+
+                if (zipFiles?.Count > 0)
+                {
+                    File.Delete(outputFilePath);
+                }
+            }
+        }
+    }
+
+    private static bool IsAlreadyDownloaded(string fileName, string outputDirectory)
+        => ZipSplitter.GetExistingZipFiles(fileName, outputDirectory).Parts.Count > 0;
 
     private async Task<bool> DownloadFileAsync(string fileUrl, string outputFilePath)
     {
@@ -133,15 +134,18 @@ public class FetchSDKsService(
         return (outputFilePath, channelFolderPath);
     }
 
-    private static bool IsNotWindowsSdk(string fileName)
-        => !fileName.EndsWith(value: ".exe", StringComparison.OrdinalIgnoreCase) ||
-           fileName.Contains(value: "-arm", StringComparison.OrdinalIgnoreCase) ||
-           fileName.Contains(value: "x86", StringComparison.OrdinalIgnoreCase);
+    private static bool ShouldIgnoreReleaseFile(string? fileName)
+        => !string.IsNullOrWhiteSpace(fileName) &&
+           (!fileName.EndsWith(value: ".exe", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Contains(value: "arm", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Contains(value: "osx", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Contains(value: "x86", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Contains(value: "musl", StringComparison.OrdinalIgnoreCase));
 
     private static bool HasNotActiveSupport(ReleaseInfo releaseIndex)
         => releaseIndex.SupportPhase?.Equals(value: "active", StringComparison.OrdinalIgnoreCase) != true;
 
-    private async Task<DotNetChannelReleases?> GetChannelReleasesAsync(string? url)
+    private async Task<DotNetChannelReleases?> GetChannelReleasesAsync(string? url, string? channelVersion)
     {
         if (string.IsNullOrWhiteSpace(url))
         {
@@ -161,7 +165,8 @@ public class FetchSDKsService(
             return null;
         }
 
-        await File.WriteAllTextAsync(Path.Join(appPathService.OutputFolderPath, Path.GetFileName(url)),
+        await File.WriteAllTextAsync(
+            Path.Join(appPathService.OutputFolderPath, $"{channelVersion}-{Path.GetFileName(url)}"),
             releasesJsonUrlJsonString);
 
         var channelData =
