@@ -1,3 +1,4 @@
+using System.Text;
 using DntSdkMirror.Models;
 using DntSdkMirror.Services.Contracts;
 using DntSdkMirror.Utils;
@@ -27,26 +28,39 @@ public class ReadmeGeneratorService(
             return;
         }
 
-        var readmeFileContent = File.ReadAllText(readmeFilePath);
-        var mainContent = readmeFileContent.Split(TableSeparator, StringSplitOptions.RemoveEmptyEntries)[0];
-
-        ICollection<ICollection<string>> rows = [];
-        var sdksDirInfo = new DirectoryInfo(appPathService.OutputFolderPath);
-
         var numericComparer = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.NumericOrdering);
 
-        foreach (var fileInfo in sdksDirInfo.GetFiles(searchPattern: "*.*", SearchOption.AllDirectories)
+        var markDown = new StringBuilder();
+
+        foreach (var fileGroupInfo in new DirectoryInfo(appPathService.OutputFolderPath)
+                     .GetFiles(searchPattern: "*.*", SearchOption.AllDirectories)
                      .Where(fileInfo => fileInfo.Name.StartsWith($"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.z",
                          StringComparison.OrdinalIgnoreCase))
                      .Select(fileInfo => new ZipFileItem(fileInfo.Directory?.Name ?? "", GetDownloadLink(fileInfo),
                          fileInfo.Length.ToFormattedFileSize()))
                      .OrderByDescending(zipFileItem => zipFileItem.Channel, numericComparer)
-                     .ThenBy(zipFileItem => zipFileItem.FileName, numericComparer))
+                     .ThenBy(zipFileItem => zipFileItem.FileName, numericComparer)
+                     .GroupBy(zipFileItem => zipFileItem.Channel))
         {
-            rows.Add([fileInfo.Channel, fileInfo.FileName, fileInfo.SizeMB]);
+            ICollection<ICollection<string>> rows = [];
+
+            foreach (var fileInfo in fileGroupInfo)
+            {
+                rows.Add([fileInfo.FileName, fileInfo.SizeMB]);
+            }
+
+            markDown.AppendLine()
+                .Append(value: "**")
+                .Append(value: "کانال دات‌نت ")
+                .Append(fileGroupInfo.Key)
+                .Append(value: ':')
+                .AppendLine(value: "**")
+                .AppendLine(MarkdownTableGenerator.GenerateMarkdownTable(["فایل", "حجم"], rows))
+                .AppendLine()
+                .AppendLine();
         }
 
-        var sdksTableContent = MarkdownTableGenerator.GenerateMarkdownTable(["کانال", "فایل", "حجم"], rows);
+        var sdksTableContent = markDown.ToString();
 
         if (string.IsNullOrWhiteSpace(sdksTableContent))
         {
@@ -58,6 +72,8 @@ public class ReadmeGeneratorService(
             return;
         }
 
+        var readmeFileContent = File.ReadAllText(readmeFilePath);
+        var mainContent = readmeFileContent.Split(TableSeparator, StringSplitOptions.RemoveEmptyEntries)[0];
         File.WriteAllText(readmeFilePath, $"{mainContent}{TableSeparator}\n{sdksTableContent}");
 
         if (logger.IsEnabled(LogLevel.Debug))
