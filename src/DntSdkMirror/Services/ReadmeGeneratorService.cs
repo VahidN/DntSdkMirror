@@ -37,16 +37,15 @@ public class ReadmeGeneratorService(
                      .Where(fileInfo => fileInfo.Name.StartsWith($"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.z",
                          StringComparison.OrdinalIgnoreCase))
                      .Select(fileInfo => new ZipFileItem(fileInfo.Directory?.Name ?? "", GetDownloadLink(fileInfo),
-                         fileInfo.Length.ToFormattedFileSize()))
-                     .OrderByDescending(zipFileItem => zipFileItem.Channel, numericComparer)
-                     .ThenBy(zipFileItem => zipFileItem.FileName, numericComparer)
+                         fileInfo.Length.ToFormattedFileSize(), fileInfo.LastWriteTimeUtc))
                      .GroupBy(zipFileItem => zipFileItem.Channel))
         {
             ICollection<ICollection<string>> rows = [];
 
-            foreach (var fileInfo in fileGroupInfo)
+            foreach (var fileInfo in fileGroupInfo.OrderByDescending(zipFileItem => zipFileItem.LastWriteTime)
+                         .ThenByDescending(zipFileItem => zipFileItem.FileName, numericComparer))
             {
-                rows.Add([fileInfo.FileName, fileInfo.SizeMB]);
+                rows.Add([fileInfo.FileName, fileInfo.SizeMB, GetPersianDay(fileInfo.LastWriteTime)]);
             }
 
             markDown.AppendLine()
@@ -55,7 +54,7 @@ public class ReadmeGeneratorService(
                 .Append(fileGroupInfo.Key)
                 .Append(value: ':')
                 .AppendLine(value: "**")
-                .AppendLine(MarkdownTableGenerator.GenerateMarkdownTable(["فایل", "حجم"], rows))
+                .AppendLine(MarkdownTableGenerator.GenerateMarkdownTable(["فایل", "حجم", "تاریخ"], rows))
                 .AppendLine()
                 .AppendLine();
         }
@@ -81,6 +80,10 @@ public class ReadmeGeneratorService(
             logger.LogDebug(message: "Finished updating `{File}`.", readmeFilePath);
         }
     }
+
+    private static string GetPersianDay(DateTime lastWriteTime)
+        => string.Create(CultureInfo.InvariantCulture,
+            $"{new PersianCalendar().GetYear(lastWriteTime)}/{new PersianCalendar().GetMonth(lastWriteTime):00}/{new PersianCalendar().GetDayOfMonth(lastWriteTime):00}");
 
     private string GetDownloadLink(FileInfo fileInfo)
     {
