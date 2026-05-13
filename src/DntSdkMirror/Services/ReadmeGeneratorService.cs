@@ -37,7 +37,7 @@ public class ReadmeGeneratorService(
                      .Where(fileInfo => fileInfo.Name.StartsWith($"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.z",
                          StringComparison.OrdinalIgnoreCase))
                      .Select(fileInfo => new ZipFileItem(fileInfo.Directory?.Name ?? "", GetDownloadLink(fileInfo),
-                         fileInfo.Length.ToFormattedFileSize(), fileInfo.LastWriteTimeUtc))
+                         fileInfo.Length.ToFormattedFileSize(), fileInfo.CreationTimeUtc))
                      .GroupBy(zipFileItem => zipFileItem.Channel))
         {
             ICollection<ICollection<string>> rows = [];
@@ -81,9 +81,9 @@ public class ReadmeGeneratorService(
         }
     }
 
-    private static string GetPersianDay(DateTime lastWriteTime)
+    private static string GetPersianDay(DateTime dateTime)
         => string.Create(CultureInfo.InvariantCulture,
-            $"{new PersianCalendar().GetYear(lastWriteTime)}/{new PersianCalendar().GetMonth(lastWriteTime):00}/{new PersianCalendar().GetDayOfMonth(lastWriteTime):00}");
+            $"{new PersianCalendar().GetYear(dateTime)}/{new PersianCalendar().GetMonth(dateTime):00}/{new PersianCalendar().GetDayOfMonth(dateTime):00}");
 
     private string GetDownloadLink(FileInfo fileInfo)
     {
