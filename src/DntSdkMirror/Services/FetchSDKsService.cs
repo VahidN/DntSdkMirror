@@ -42,7 +42,7 @@ public class FetchSDKsService(
 
         foreach (var releaseIndex in index.ReleasesIndex)
         {
-            if (HasNotActiveSupport(releaseIndex))
+            if (!IsSupported(releaseIndex))
             {
                 continue;
             }
@@ -142,8 +142,9 @@ public class FetchSDKsService(
             fileName.Contains(value: "x86", StringComparison.OrdinalIgnoreCase) ||
             fileName.Contains(value: "musl", StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasNotActiveSupport(ReleaseInfo releaseIndex)
-        => releaseIndex.SupportPhase?.Equals(value: "active", StringComparison.OrdinalIgnoreCase) != true;
+    private static bool IsSupported(ReleaseInfo releaseIndex)
+        => releaseIndex.SupportPhase?.Equals(value: "active", StringComparison.OrdinalIgnoreCase) == true ||
+           releaseIndex.SupportPhase?.Equals(value: "maintenance", StringComparison.OrdinalIgnoreCase) == true;
 
     private async Task<DotNetChannelReleases?> GetChannelReleasesAsync(string? url, string? channelVersion)
     {
