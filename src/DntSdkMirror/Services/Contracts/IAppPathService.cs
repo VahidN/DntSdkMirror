@@ -7,4 +7,6 @@ public interface IAppPathService
     string RootPath { get; }
 
     string ReadmeFilePath { get; }
+
+    IList<FileInfo> GetAllZipFiles();
 }
