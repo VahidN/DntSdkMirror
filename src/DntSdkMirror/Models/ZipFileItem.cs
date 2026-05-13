@@ -1,3 +1,3 @@
 namespace DntSdkMirror.Models;
 
-public record ZipFileItem(string Channel, string FileName, string SizeMB, DateTime LastWriteTime);
+public record ZipFileItem(string Channel, string FileName, string SizeMB, string ReleaseDate);
