@@ -17,6 +17,12 @@ public class AppPathService(
 
     public string ReadmeFilePath => field ??= Path.Join(RootPath, appConfig.Value.ReadmeFileName);
 
+    public IList<FileInfo> GetAllZipFiles()
+        => new DirectoryInfo(OutputFolderPath).GetFiles(searchPattern: "*.*", SearchOption.AllDirectories)
+            .Where(fileInfo => fileInfo.Name.StartsWith($"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.z",
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
     private string GetOutputFolderPath()
     {
         var outPutPath = Path.Join(RootPath, appConfig.Value.OutputFolderName);
