@@ -42,10 +42,10 @@ public class ReadmeGeneratorService(
         {
             ICollection<ICollection<string>> rows = [];
 
-            foreach (var fileInfo in fileGroupInfo.OrderByDescending(zipFileItem => zipFileItem.LastWriteTime)
-                         .ThenByDescending(zipFileItem => zipFileItem.FileName, numericComparer))
+            foreach (var fileInfo in fileGroupInfo.OrderByDescending(zipFileItem => zipFileItem.FileName,
+                         numericComparer))
             {
-                rows.Add([fileInfo.FileName, fileInfo.SizeMB, GetPersianDay(fileInfo.LastWriteTime)]);
+                rows.Add([fileInfo.FileName, fileInfo.SizeMB]);
             }
 
             markDown.AppendLine()
@@ -54,7 +54,7 @@ public class ReadmeGeneratorService(
                 .Append(fileGroupInfo.Key)
                 .Append(value: ':')
                 .AppendLine(value: "**")
-                .AppendLine(MarkdownTableGenerator.GenerateMarkdownTable(["فایل", "حجم", "تاریخ"], rows))
+                .AppendLine(MarkdownTableGenerator.GenerateMarkdownTable(["فایل", "حجم"], rows))
                 .AppendLine()
                 .AppendLine();
         }
@@ -80,10 +80,6 @@ public class ReadmeGeneratorService(
             logger.LogDebug(message: "Finished updating `{File}`.", readmeFilePath);
         }
     }
-
-    private static string GetPersianDay(DateTime dateTime)
-        => string.Create(CultureInfo.InvariantCulture,
-            $"{new PersianCalendar().GetYear(dateTime)}/{new PersianCalendar().GetMonth(dateTime):00}/{new PersianCalendar().GetDayOfMonth(dateTime):00}");
 
     private string GetDownloadLink(FileInfo fileInfo)
     {
