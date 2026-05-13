@@ -11,6 +11,7 @@ public class FetchSDKsService(
     IHttpClientFactory httpClientFactory,
     IOptions<AppConfig> appConfig,
     IAppPathService appPathService,
+    IChannelReleasesStoreService channelReleasesStoreService,
     ILogger<FetchSDKsService> logger) : IFetchSDKsService
 {
     private const int MaxPartSizeMB = 45;
@@ -177,6 +178,10 @@ public class FetchSDKsService(
         {
             logger.LogError(message: "Failed to deserialize data: {ReleasesJsonUrlJsonString}",
                 releasesJsonUrlJsonString);
+        }
+        else
+        {
+            channelReleasesStoreService.Add(channelData);
         }
 
         return channelData;
