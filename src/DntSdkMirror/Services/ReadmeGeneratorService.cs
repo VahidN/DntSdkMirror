@@ -9,6 +9,7 @@ namespace DntSdkMirror.Services;
 
 public class ReadmeGeneratorService(
     IAppPathService appPathService,
+    IChannelReleasesStoreService channelReleasesStoreService,
     IOptions<AppConfig> appConfig,
     ILogger<ReadmeGeneratorService> logger) : IReadmeGeneratorService
 {
@@ -32,20 +33,17 @@ public class ReadmeGeneratorService(
 
         var markDown = new StringBuilder();
 
-        foreach (var fileGroupInfo in new DirectoryInfo(appPathService.OutputFolderPath)
-                     .GetFiles(searchPattern: "*.*", SearchOption.AllDirectories)
-                     .Where(fileInfo => fileInfo.Name.StartsWith($"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.z",
-                         StringComparison.OrdinalIgnoreCase))
+        foreach (var fileGroupInfo in appPathService.GetAllZipFiles()
                      .Select(fileInfo => new ZipFileItem(fileInfo.Directory?.Name ?? "", GetDownloadLink(fileInfo),
-                         fileInfo.Length.ToFormattedFileSize(), fileInfo.CreationTimeUtc))
+                         fileInfo.Length.ToFormattedFileSize(), GetFileReleaseDate(fileInfo)))
                      .GroupBy(zipFileItem => zipFileItem.Channel))
         {
             ICollection<ICollection<string>> rows = [];
 
-            foreach (var fileInfo in fileGroupInfo.OrderByDescending(zipFileItem => zipFileItem.FileName,
-                         numericComparer))
+            foreach (var fileInfo in fileGroupInfo.OrderByDescending(zipFileItem => zipFileItem.ReleaseDate)
+                         .ThenByDescending(zipFileItem => zipFileItem.FileName, numericComparer))
             {
-                rows.Add([fileInfo.FileName, fileInfo.SizeMB]);
+                rows.Add([fileInfo.FileName, fileInfo.SizeMB, fileInfo.ReleaseDate]);
             }
 
             markDown.AppendLine()
@@ -54,7 +52,7 @@ public class ReadmeGeneratorService(
                 .Append(fileGroupInfo.Key)
                 .Append(value: ':')
                 .AppendLine(value: "**")
-                .AppendLine(MarkdownTableGenerator.GenerateMarkdownTable(["فایل", "حجم"], rows))
+                .AppendLine(MarkdownTableGenerator.GenerateMarkdownTable(["فایل", "حجم", "تاریخ ارائه"], rows))
                 .AppendLine()
                 .AppendLine();
         }
@@ -80,6 +78,14 @@ public class ReadmeGeneratorService(
             logger.LogDebug(message: "Finished updating `{File}`.", readmeFilePath);
         }
     }
+
+    private string GetFileReleaseDate(FileInfo fileInfo)
+        => GetPersianDay(channelReleasesStoreService.GetReleaseDate(Path.GetFileNameWithoutExtension(fileInfo.Name))
+            .FileReleaseDate ?? DateTime.UtcNow);
+
+    private static string GetPersianDay(DateTime dateTime)
+        => string.Create(CultureInfo.InvariantCulture,
+            $"{new PersianCalendar().GetYear(dateTime)}/{new PersianCalendar().GetMonth(dateTime):00}/{new PersianCalendar().GetDayOfMonth(dateTime):00}");
 
     private string GetDownloadLink(FileInfo fileInfo)
     {
