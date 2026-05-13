@@ -19,6 +19,7 @@ public static class ServicesRegistry
         serviceCollection.TryAddSingleton<IAppPathService, AppPathService>();
         serviceCollection.TryAddSingleton<IAppRunnerService, AppRunnerService>();
         serviceCollection.TryAddSingleton<IReadmeGeneratorService, ReadmeGeneratorService>();
+        serviceCollection.TryAddSingleton<IChannelReleasesStoreService, ChannelReleasesStoreService>();
 
         var httpClientBuilder = serviceCollection.AddHttpClient();
 
