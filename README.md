@@ -83,25 +83,6 @@ archive.z02
 
 <!---->
 
-**کانال دات‌نت 10.0:**
-|فایل|حجم|تاریخ ارائه|
-|---|---|---|
-|[windowsdesktop-runtime-10.0.8-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/windowsdesktop-runtime-10.0.8-win-x64.zip)|12.3 MB|1405/02/22|
-|[windowsdesktop-runtime-10.0.8-win-x64.z01](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/windowsdesktop-runtime-10.0.8-win-x64.z01)|47.2 MB|1405/02/22|
-|[dotnet-sdk-10.0.300-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.zip)|24.6 MB|1405/02/22|
-|[dotnet-sdk-10.0.300-win-x64.z04](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z04)|47.2 MB|1405/02/22|
-|[dotnet-sdk-10.0.300-win-x64.z03](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z03)|47.2 MB|1405/02/22|
-|[dotnet-sdk-10.0.300-win-x64.z02](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z02)|47.2 MB|1405/02/22|
-|[dotnet-sdk-10.0.300-win-x64.z01](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z01)|47.2 MB|1405/02/22|
-|[dotnet-runtime-10.0.8-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-runtime-10.0.8-win-x64.zip)|30.1 MB|1405/02/22|
-|[dotnet-hosting-10.0.8-win.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-hosting-10.0.8-win.zip)|22.7 MB|1405/02/22|
-|[dotnet-hosting-10.0.8-win.z02](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-hosting-10.0.8-win.z02)|47.2 MB|1405/02/22|
-|[dotnet-hosting-10.0.8-win.z01](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-hosting-10.0.8-win.z01)|47.2 MB|1405/02/22|
-|[aspnetcore-runtime-10.0.8-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/aspnetcore-runtime-10.0.8-win-x64.zip)|10.8 MB|1405/02/22|
-
-
-
-
 **کانال دات‌نت 9.0:**
 |فایل|حجم|تاریخ ارائه|
 |---|---|---|
@@ -136,6 +117,25 @@ archive.z02
 |[dotnet-hosting-8.0.27-win.z02](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/8.0/dotnet-hosting-8.0.27-win.z02)|47.2 MB|1405/02/22|
 |[dotnet-hosting-8.0.27-win.z01](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/8.0/dotnet-hosting-8.0.27-win.z01)|47.2 MB|1405/02/22|
 |[aspnetcore-runtime-8.0.27-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/8.0/aspnetcore-runtime-8.0.27-win-x64.zip)|10.3 MB|1405/02/22|
+
+
+
+
+**کانال دات‌نت 10.0:**
+|فایل|حجم|تاریخ ارائه|
+|---|---|---|
+|[windowsdesktop-runtime-10.0.8-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/windowsdesktop-runtime-10.0.8-win-x64.zip)|12.3 MB|1405/02/22|
+|[windowsdesktop-runtime-10.0.8-win-x64.z01](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/windowsdesktop-runtime-10.0.8-win-x64.z01)|47.2 MB|1405/02/22|
+|[dotnet-sdk-10.0.300-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.zip)|24.6 MB|1405/02/22|
+|[dotnet-sdk-10.0.300-win-x64.z04](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z04)|47.2 MB|1405/02/22|
+|[dotnet-sdk-10.0.300-win-x64.z03](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z03)|47.2 MB|1405/02/22|
+|[dotnet-sdk-10.0.300-win-x64.z02](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z02)|47.2 MB|1405/02/22|
+|[dotnet-sdk-10.0.300-win-x64.z01](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-sdk-10.0.300-win-x64.z01)|47.2 MB|1405/02/22|
+|[dotnet-runtime-10.0.8-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-runtime-10.0.8-win-x64.zip)|30.1 MB|1405/02/22|
+|[dotnet-hosting-10.0.8-win.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-hosting-10.0.8-win.zip)|22.7 MB|1405/02/22|
+|[dotnet-hosting-10.0.8-win.z02](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-hosting-10.0.8-win.z02)|47.2 MB|1405/02/22|
+|[dotnet-hosting-10.0.8-win.z01](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/dotnet-hosting-10.0.8-win.z01)|47.2 MB|1405/02/22|
+|[aspnetcore-runtime-10.0.8-win-x64.zip](https://github.com/VahidN/DntSdkMirror/raw/refs/heads/main/sdks/10.0/aspnetcore-runtime-10.0.8-win-x64.zip)|10.8 MB|1405/02/22|
 
 
 
