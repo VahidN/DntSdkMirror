@@ -13,7 +13,8 @@
       "release-date": "2026-05-12",
       "release-version": "9.0.16",
       "security": true,
-      "cve-list": [     {
+      "cve-list": [
+        {
           "cve-id": "CVE-2026-32177",
           "cve-url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-32177"
         },
@@ -29,7 +30,7 @@
           "cve-id": "CVE-2026-42899",
           "cve-url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-42899"
         }
-        ],
+      ],
       "release-notes": "https://github.com/dotnet/core/blob/main/release-notes/9.0/9.0.16/9.0.16.md",
       "runtime": {
         "version": "9.0.16",
@@ -15840,5 +15841,9 @@
         ]
       }
     }
-  ]
+  ],
+  "signature": {
+    "expiration": "2026-08-20T09:44:50.0636794+00:00",
+    "file": "releases.json.20260522094450.p7s"
+  }
 }
